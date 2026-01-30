@@ -342,7 +342,7 @@ const SUPABASE_URL = 'https://otilvaakckifhqghtzkb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90aWx2YWFrY2tpZmhxZ2h0emtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NDU2MTIsImV4cCI6MjA4NTMyMTYxMn0.WizdRSXgmRVqjGoDGfg6LHRRo5RH3fAbJkRffRdy_LE';
 const SHOP_SLUG = 'demo'; // Change per client or get from URL
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================
 // STATE
@@ -852,7 +852,7 @@ async function completeSale() {
   const profit = cart.reduce((a, c) => a + (c.unit_price - c.cost_price) * c.qty, 0) - discount;
   
   // Generate receipt number
-  const { data: receiptData } = await supabase.rpc('generate_receipt_no', { shop_uuid: shop.id });
+  const { data: receiptData } = await supabaseClient.rpc('generate_receipt_no', { shop_uuid: shop.id });
   const receiptNo = receiptData || 'RCP-' + Date.now();
   
   // Create sale
@@ -892,12 +892,12 @@ async function completeSale() {
     line_total: c.line_total
   }));
   
-  await supabase.from('sale_items').insert(items);
+  await supabaseClient.from('sale_items').insert(items);
   
   // Update stock
   for (const c of cart) {
     if (c.product_id) {
-      await supabase.rpc('update_stock', { 
+      await supabaseClient.rpc('update_stock', { 
         p_product_id: c.product_id, 
         p_quantity: -c.qty 
       });
@@ -1032,7 +1032,7 @@ async function completeWAOrder(id) {
   show('Completing...');
   
   // Create sale from order
-  const { data: receiptData } = await supabase.rpc('generate_receipt_no', { shop_uuid: shop.id });
+  const { data: receiptData } = await supabaseClient.rpc('generate_receipt_no', { shop_uuid: shop.id });
   const receiptNo = receiptData || 'RCP-' + Date.now();
   
   const items = order.whatsapp_order_items || [];
@@ -1167,9 +1167,9 @@ async function saveProduct() {
   
   let error;
   if (id) {
-    ({ error } = await supabase.from('products').update(data).eq('id', id));
+    ({ error } = await supabaseClient.from('products').update(data).eq('id', id));
   } else {
-    ({ error } = await supabase.from('products').insert(data));
+    ({ error } = await supabaseClient.from('products').insert(data));
   }
   
   hide();
@@ -1190,7 +1190,7 @@ async function deleteProduct(id) {
   if (!confirm('Delete product?')) return;
   
   show('Deleting...');
-  await supabase.from('products').update({ active: false }).eq('id', id);
+  await supabaseClient.from('products').update({ active: false }).eq('id', id);
   hide();
   
   toast('Deleted!', 'success');
@@ -1277,9 +1277,9 @@ async function saveStaff() {
   
   let error;
   if (id) {
-    ({ error } = await supabase.from('users').update(data).eq('id', id));
+    ({ error } = await supabaseClient.from('users').update(data).eq('id', id));
   } else {
-    ({ error } = await supabase.from('users').insert(data));
+    ({ error } = await supabaseClient.from('users').insert(data));
   }
   
   hide();
@@ -1299,7 +1299,7 @@ async function deleteStaff(id) {
   if (!confirm('Delete staff?')) return;
   
   show('Deleting...');
-  await supabase.from('users').update({ active: false }).eq('id', id);
+  await supabaseClient.from('users').update({ active: false }).eq('id', id);
   hide();
   
   toast('Deleted!', 'success');
