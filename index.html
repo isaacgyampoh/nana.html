@@ -390,7 +390,7 @@ async function init() {
   show('Loading...');
   
   // Get shop by slug
-  const { data: shopData, error: shopError } = await supabase
+  const { data: shopData, error: shopError } = await supabaseClient
     .from('shops')
     .select('*')
     .eq('slug', SHOP_SLUG)
@@ -477,7 +477,7 @@ async function loadAllData() {
 }
 
 async function loadStaff() {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('users')
     .select('*')
     .eq('shop_id', shop.id);
@@ -485,7 +485,7 @@ async function loadStaff() {
 }
 
 async function loadProducts() {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('products')
     .select('*')
     .eq('shop_id', shop.id)
@@ -495,7 +495,7 @@ async function loadProducts() {
 }
 
 async function loadSales() {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('sales')
     .select('*, sale_items(*)')
     .eq('shop_id', shop.id)
@@ -505,7 +505,7 @@ async function loadSales() {
 }
 
 async function loadWhatsAppOrders() {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('whatsapp_orders')
     .select('*, whatsapp_order_items(*)')
     .eq('shop_id', shop.id)
@@ -514,7 +514,7 @@ async function loadWhatsAppOrders() {
 }
 
 async function loadBundles() {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('bundles')
     .select('*, bundle_items(*, products(*))')
     .eq('shop_id', shop.id)
@@ -856,7 +856,7 @@ async function completeSale() {
   const receiptNo = receiptData || 'RCP-' + Date.now();
   
   // Create sale
-  const { data: sale, error } = await supabase
+  const { data: sale, error } = await supabaseClient
     .from('sales')
     .insert({
       shop_id: shop.id,
@@ -996,7 +996,7 @@ async function confirmMomoPayment() {
   
   show('Confirming...');
   
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('whatsapp_orders')
     .update({ 
       payment_status: 'paid', 
@@ -1039,7 +1039,7 @@ async function completeWAOrder(id) {
   const subtotal = items.reduce((a, i) => a + n(i.line_total), 0);
   const total = n(order.total);
   
-  const { data: sale } = await supabase
+  const { data: sale } = await supabaseClient
     .from('sales')
     .insert({
       shop_id: shop.id,
@@ -1059,7 +1059,7 @@ async function completeWAOrder(id) {
     .single();
   
   // Update order
-  await supabase
+  await supabaseClient
     .from('whatsapp_orders')
     .update({
       status: 'completed',
@@ -1081,7 +1081,7 @@ async function cancelWAOrder(id) {
   
   show('Cancelling...');
   
-  await supabase
+  await supabaseClient
     .from('whatsapp_orders')
     .update({
       status: 'cancelled',
